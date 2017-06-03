@@ -376,6 +376,16 @@ TLI_DEFINE_STRING_INTERNAL("__powf_finite")
 /// long double __powl_finite(long double x, long double y);
 TLI_DEFINE_ENUM_INTERNAL(powl_finite)
 TLI_DEFINE_STRING_INTERNAL("__powl_finite")
+
+TLI_DEFINE_ENUM_INTERNAL(rust_alloc)
+TLI_DEFINE_STRING_INTERNAL("__rust_alloc")
+
+TLI_DEFINE_ENUM_INTERNAL(rust_dealloc)
+TLI_DEFINE_STRING_INTERNAL("__rust_dealloc")
+
+TLI_DEFINE_ENUM_INTERNAL(rust_realloc)
+TLI_DEFINE_STRING_INTERNAL("__rust_realloc")
+
 /// double __sincospi_stret(double x);
 TLI_DEFINE_ENUM_INTERNAL(sincospi_stret)
 TLI_DEFINE_STRING_INTERNAL("__sincospi_stret")

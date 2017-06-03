@@ -106,7 +106,10 @@ static const std::pair<LibFunc, AllocFnsTy> AllocationFnData[] = {
   {LibFunc_realloc,             {ReallocLike, 2, 1,  -1}},
   {LibFunc_reallocf,            {ReallocLike, 2, 1,  -1}},
   {LibFunc_strdup,              {StrDupLike,  1, -1, -1}},
-  {LibFunc_strndup,             {StrDupLike,  2, 1,  -1}}
+  {LibFunc_strndup,             {StrDupLike,  2, 1,  -1}},
+
+  {LibFunc_rust_alloc,         {MallocLike,  2, 0,  -1}},
+  {LibFunc_rust_realloc,       {ReallocLike,  4, 3,  -1}},
   // TODO: Handle "int posix_memalign(void **, size_t, size_t)"
 };
 
@@ -460,7 +463,8 @@ bool llvm::isLibFreeFunction(const Function *F, const LibFunc TLIFn) {
            TLIFn == LibFunc_ZdlPvjSt11align_val_t || // delete(void*, unsigned long, align_val_t)
            TLIFn == LibFunc_ZdlPvmSt11align_val_t || // delete(void*, unsigned long, align_val_t)
            TLIFn == LibFunc_ZdaPvjSt11align_val_t || // delete[](void*, unsigned int, align_val_t)
-           TLIFn == LibFunc_ZdaPvmSt11align_val_t) // delete[](void*, unsigned long, align_val_t)
+           TLIFn == LibFunc_ZdaPvmSt11align_val_t || // delete[](void*, unsigned long, align_val_t)
+           TLIFn == LibFunc_rust_dealloc)
     ExpectedNumParams = 3;
   else
     return false;
