@@ -211,6 +211,19 @@ if (NOT LLVM_INSTALL_TOOLCHAIN_ONLY)
     )
 endif()
 
+if (MSVC)
+  FOREACH(flag
+      CMAKE_C_FLAGS_RELEASE CMAKE_C_FLAGS_RELWITHDEBINFO
+      CMAKE_C_FLAGS_DEBUG CMAKE_C_FLAGS_DEBUG_INIT
+      CMAKE_CXX_FLAGS_RELEASE  CMAKE_CXX_FLAGS_RELWITHDEBINFO
+      CMAKE_CXX_FLAGS_DEBUG  CMAKE_CXX_FLAGS_DEBUG_INIT)
+      if (MSVC)
+          STRING(REPLACE "/MD"  "/MT" "${flag}" "${${flag}}")
+          SET("${flag}" "${${flag}}")
+      endif (MSVC)
+  ENDFOREACH()
+endif()
+
 add_subdirectory(Common)
 add_subdirectory(lib)
 add_subdirectory(tools/lld)
