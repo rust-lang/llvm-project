@@ -60,7 +60,8 @@ class WebAssemblyFunctionInfo final : public MachineFunctionInfo {
   bool CFGStackified = false;
 
 public:
-  explicit WebAssemblyFunctionInfo(MachineFunction &MF) : MF(MF) {}
+  explicit WebAssemblyFunctionInfo(MachineFunction &MF)
+      : MF(MF), SPVReg(WebAssembly::NoRegister) {}
   ~WebAssemblyFunctionInfo() override;
   void initializeBaseYamlFields(const yaml::WebAssemblyFunctionInfo &YamlMFI);
 
@@ -129,6 +130,9 @@ public:
 
   bool isCFGStackified() const { return CFGStackified; }
   void setCFGStackified(bool Value = true) { CFGStackified = Value; }
+
+  unsigned SPVReg;
+  unsigned SPLocal;
 };
 
 void computeLegalValueVTs(const Function &F, const TargetMachine &TM, Type *Ty,

@@ -385,6 +385,13 @@ bool WebAssemblyExplicitLocals::runOnMachineFunction(MachineFunction &MF) {
     Changed = true;
   }
 
+  {
+    auto RL = Reg2Local.find(MFI.SPVReg);
+    if (RL != Reg2Local.end()) {
+      MFI.SPLocal = RL->second;
+    }
+  }
+
 #ifndef NDEBUG
   // Assert that all registers have been stackified at this point.
   for (const MachineBasicBlock &MBB : MF) {
