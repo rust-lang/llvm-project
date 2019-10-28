@@ -39,6 +39,7 @@
 #include "llvm/Support/TargetRegistry.h"
 #include "llvm/Target/TargetLoweringObjectFile.h"
 #include "llvm/Target/TargetOptions.h"
+#include "llvm/Transforms/CFGuard.h"
 #include "llvm/Transforms/Scalar.h"
 #include <memory>
 #include <string>
@@ -449,6 +450,10 @@ void AArch64PassConfig::addIRPasses() {
   }
 
   addPass(createAArch64StackTaggingPass());
+
+  // Add Control Flow Guard checks.
+  if (TM->getTargetTriple().isOSWindows())
+    addPass(createCFGuardCheckPass());
 }
 
 // Pass Pipeline Configuration
@@ -605,6 +610,10 @@ void AArch64PassConfig::addPreEmitPass() {
 
   if (EnableBranchTargets)
     addPass(createAArch64BranchTargetsPass());
+
+  // Identify valid longjmp targets for Windows Control Flow Guard.
+  if (TM->getTargetTriple().isOSWindows())
+    addPass(createCFGuardLongjmpPass());
 
   if (TM->getOptLevel() != CodeGenOpt::None && EnableCompressJumpTables)
     addPass(createAArch64CompressJumpTablesPass());

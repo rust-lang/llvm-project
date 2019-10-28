@@ -75,7 +75,12 @@ namespace CallingConv {
     // CXX_FAST_TLS - Calling convention for access functions.
     CXX_FAST_TLS = 17,
 
-    // Target - This is the start of the target-specific calling conventions,
+    /// Special calling convention on Windows for calling the Control
+    /// Guard Check ICall funtion. The function takes exactly one argument
+    /// (address of the target function) passed in the first argument register,
+    /// and has no return value. All register values are preserved.
+    CFGuard_Check = 19,
+
     // e.g. fastcall and thiscall on X86.
     FirstTargetCC = 64,
 

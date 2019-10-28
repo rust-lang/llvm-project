@@ -145,6 +145,11 @@ Noteworthy optimizations
   lookup table.
 
 
+* Windows Control Flow Guard: the ``-cfguard`` option now emits CFG checks on
+  indirect function calls. The previous behavior is still available with the 
+  ``-cfguard-nochecks`` option. Note that this feature should always be used 
+  with optimizations enabled.
+
 Changes to the LLVM IR
 ----------------------
 
