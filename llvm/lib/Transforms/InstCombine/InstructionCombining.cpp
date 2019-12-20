@@ -121,6 +121,9 @@ STATISTIC(NumReassoc  , "Number of reassociations");
 DEBUG_COUNTER(VisitCounter, "instcombine-visit",
               "Controls which instructions are visited");
 
+static constexpr unsigned InstCombineDefaultMaxIterations = 1000;
+static constexpr unsigned InstCombineDefaultInfiniteLoopThreshold = 1000;
+
 static cl::opt<bool>
 EnableCodeSinking("instcombine-code-sinking", cl::desc("Enable code sinking"),
                                               cl::init(true));
@@ -128,6 +131,12 @@ EnableCodeSinking("instcombine-code-sinking", cl::desc("Enable code sinking"),
 static cl::opt<bool>
 EnableExpensiveCombines("expensive-combines",
                         cl::desc("Enable expensive instruction combines"));
+
+static cl::opt<unsigned> InfiniteLoopDetectionThreshold(
+    "instcombine-infinite-loop-threshold",
+    cl::desc("Number of instruction combining iterations considered an "
+             "infinite loop"),
+    cl::init(InstCombineDefaultInfiniteLoopThreshold), cl::Hidden);
 
 static cl::opt<unsigned>
 MaxArraySize("instcombine-maxarray-size", cl::init(1024),
@@ -3508,9 +3517,16 @@ static bool combineInstructionsOverFunction(
     MadeIRChange = LowerDbgDeclare(F);
 
   // Iterate while there is work to do.
-  int Iteration = 0;
+  unsigned Iteration = 0;
   while (true) {
     ++Iteration;
+
+    if (Iteration > InfiniteLoopDetectionThreshold) {
+      report_fatal_error(
+          "Instruction Combining seems stuck in an infinite loop after " +
+          Twine(InfiniteLoopDetectionThreshold) + " iterations.");
+    }
+
     LLVM_DEBUG(dbgs() << "\n\nINSTCOMBINE ITERATION #" << Iteration << " on "
                       << F.getName() << "\n");
 
