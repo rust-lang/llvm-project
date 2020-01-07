@@ -755,7 +755,6 @@ bool WebAssemblyLowerEmscriptenEHSjLj::runEHOnFunction(Function &F) {
     auto *II = dyn_cast<InvokeInst>(BB.getTerminator());
     if (!II)
       continue;
-    Changed = true;
     LandingPads.insert(II->getLandingPadInst());
     IRB.SetInsertPoint(II);
 
@@ -835,6 +834,7 @@ bool WebAssemblyLowerEmscriptenEHSjLj::runEHOnFunction(Function &F) {
     if (auto *LPI = dyn_cast<LandingPadInst>(I))
       LandingPads.insert(LPI);
   }
+  Changed = !LandingPads.empty();
 
   // Handle all the landingpad for this function together, as multiple invokes
   // may share a single lp
