@@ -448,8 +448,8 @@ static bool isSupportedAtomicType(Type *Ty) {
 ///
 /// Note that this will create all of the instructions with whatever insert
 /// point the \c InstCombiner currently is using.
-static LoadInst *combineLoadToNewType(InstCombiner &IC, LoadInst &LI, Type *NewTy,
-                                      const Twine &Suffix = "") {
+LoadInst *InstCombiner::combineLoadToNewType(LoadInst &LI, Type *NewTy,
+                                             const Twine &Suffix) {
   assert((!LI.isAtomic() || isSupportedAtomicType(NewTy)) &&
          "can't fold an atomic load to requested type");
 
@@ -462,9 +462,9 @@ static LoadInst *combineLoadToNewType(InstCombiner &IC, LoadInst &LI, Type *NewT
   if (!(match(Ptr, m_BitCast(m_Value(NewPtr))) &&
         NewPtr->getType()->getPointerElementType() == NewTy &&
         NewPtr->getType()->getPointerAddressSpace() == AS))
-    NewPtr = IC.Builder.CreateBitCast(Ptr, NewTy->getPointerTo(AS));
+    NewPtr = Builder.CreateBitCast(Ptr, NewTy->getPointerTo(AS));
 
-  LoadInst *NewLoad = IC.Builder.CreateAlignedLoad(
+  LoadInst *NewLoad = Builder.CreateAlignedLoad(
       NewTy, NewPtr, LI.getAlignment(), LI.isVolatile(), LI.getName() + Suffix);
   NewLoad->setAtomic(LI.getOrdering(), LI.getSyncScopeID());
   MDBuilder MDB(NewLoad->getContext());
@@ -505,7 +505,7 @@ static LoadInst *combineLoadToNewType(InstCombiner &IC, LoadInst &LI, Type *NewT
         NewLoad->setMetadata(ID, N);
       break;
     case LLVMContext::MD_range:
-      copyRangeMetadata(IC.getDataLayout(), LI, N, *NewLoad);
+      copyRangeMetadata(getDataLayout(), LI, N, *NewLoad);
       break;
     }
   }
@@ -639,9 +639,8 @@ static Instruction *combineLoadToOperationType(InstCombiner &IC, LoadInst &LI) {
           return SI && SI->getPointerOperand() != &LI &&
                  !SI->getPointerOperand()->isSwiftError();
         })) {
-      LoadInst *NewLoad = combineLoadToNewType(
-          IC, LI,
-          Type::getIntNTy(LI.getContext(), DL.getTypeStoreSizeInBits(Ty)));
+      LoadInst *NewLoad = IC.combineLoadToNewType(
+          LI, Type::getIntNTy(LI.getContext(), DL.getTypeStoreSizeInBits(Ty)));
       // Replace all the stores with stores of the newly loaded value.
       for (auto UI = LI.user_begin(), UE = LI.user_end(); UI != UE;) {
         auto *SI = cast<StoreInst>(*UI++);
@@ -663,7 +662,7 @@ static Instruction *combineLoadToOperationType(InstCombiner &IC, LoadInst &LI) {
     if (auto* CI = dyn_cast<CastInst>(LI.user_back()))
       if (CI->isNoopCast(DL))
         if (!LI.isAtomic() || isSupportedAtomicType(CI->getDestTy())) {
-          LoadInst *NewLoad = combineLoadToNewType(IC, LI, CI->getDestTy());
+          LoadInst *NewLoad = IC.combineLoadToNewType(LI, CI->getDestTy());
           CI->replaceAllUsesWith(NewLoad);
           IC.eraseInstFromFunction(*CI);
           return &LI;
@@ -691,8 +690,8 @@ static Instruction *unpackLoadToAggregate(InstCombiner &IC, LoadInst &LI) {
     // If the struct only have one element, we unpack.
     auto NumElements = ST->getNumElements();
     if (NumElements == 1) {
-      LoadInst *NewLoad = combineLoadToNewType(IC, LI, ST->getTypeAtIndex(0U),
-                                               ".unpack");
+      LoadInst *NewLoad = IC.combineLoadToNewType(LI, ST->getTypeAtIndex(0U),
+                                                  ".unpack");
       AAMDNodes AAMD;
       LI.getAAMetadata(AAMD);
       NewLoad->setAAMetadata(AAMD);
@@ -741,7 +740,7 @@ static Instruction *unpackLoadToAggregate(InstCombiner &IC, LoadInst &LI) {
     auto *ET = AT->getElementType();
     auto NumElements = AT->getNumElements();
     if (NumElements == 1) {
-      LoadInst *NewLoad = combineLoadToNewType(IC, LI, ET, ".unpack");
+      LoadInst *NewLoad = IC.combineLoadToNewType(LI, ET, ".unpack");
       AAMDNodes AAMD;
       LI.getAAMetadata(AAMD);
       NewLoad->setAAMetadata(AAMD);
@@ -1377,8 +1376,8 @@ static bool removeBitcastsFromLoadStoreOnMinMax(InstCombiner &IC,
     return false;
 
   IC.Builder.SetInsertPoint(LI);
-  LoadInst *NewLI = combineLoadToNewType(
-      IC, *LI, LoadAddr->getType()->getPointerElementType());
+  LoadInst *NewLI = IC.combineLoadToNewType(
+      *LI, LoadAddr->getType()->getPointerElementType());
   // Replace all the stores with stores of the newly loaded value.
   for (auto *UI : LI->users()) {
     auto *USI = cast<StoreInst>(UI);
