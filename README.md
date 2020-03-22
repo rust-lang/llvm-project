@@ -11,4 +11,4 @@ first, and then we can cherry-pick them onto our branches if necessary.
 
 To learn more about updating LLVM in the Rust compiler, consult the
 [documentation for doing so in
-`rustc-guide`](https://rust-lang.github.io/rustc-guide/codegen/updating-llvm.html)
+`rustc-guide`](https://rustc-dev-guide.rust-lang.org/backend/updating-llvm.html)
