@@ -15,7 +15,7 @@
 
 #if defined(_WIN32)
 #include <windows.h>
-#elif !defined(_LIBUNWIND_HAS_NO_THREADS)
+#elif !defined(_LIBUNWIND_HAS_NO_THREADS) && !defined(RUST_SGX)
 #include <pthread.h>
 #if defined(__ELF__) && defined(_LIBUNWIND_LINK_PTHREAD_LIB)
 #pragma comment(lib, "pthread")

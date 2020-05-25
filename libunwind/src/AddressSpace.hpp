@@ -124,6 +124,7 @@ namespace libunwind {
 //   __eh_frame_hdr_start = SIZEOF(.eh_frame_hdr) > 0 ? ADDR(.eh_frame_hdr) : 0;
 //   __eh_frame_hdr_end = SIZEOF(.eh_frame_hdr) > 0 ? . : 0;
 
+#if !defined(RUST_SGX)
 extern char __eh_frame_start;
 extern char __eh_frame_end;
 
@@ -131,6 +132,15 @@ extern char __eh_frame_end;
 extern char __eh_frame_hdr_start;
 extern char __eh_frame_hdr_end;
 #endif
+
+#elif defined(RUST_SGX)
+extern "C" char IMAGE_BASE;
+extern "C" uint64_t EH_FRM_HDR_OFFSET;
+extern "C" uint64_t EH_FRM_HDR_LEN;
+extern "C" uint64_t EH_FRM_OFFSET;
+extern "C" uint64_t EH_FRM_LEN;
+#endif
+
 
 #elif defined(_LIBUNWIND_ARM_EHABI) && defined(_LIBUNWIND_IS_BAREMETAL)
 
@@ -392,6 +402,10 @@ LocalAddressSpace::getEncodedP(pint_t &addr, pint_t end, uint8_t encoding,
   return result;
 }
 
+#if defined(RUST_SGX)
+extern "C" char IMAGE_BASE;
+#endif
+    
 inline bool LocalAddressSpace::findUnwindSections(pint_t targetAddr,
                                                   UnwindInfoSections &info) {
 #ifdef __APPLE__
@@ -408,6 +422,8 @@ inline bool LocalAddressSpace::findUnwindSections(pint_t targetAddr,
   }
 #elif defined(_LIBUNWIND_SUPPORT_DWARF_UNWIND) && defined(_LIBUNWIND_IS_BAREMETAL)
   // Bare metal is statically linked, so no need to ask the dynamic loader
+
+#if !defined(RUST_SGX)
   info.dwarf_section_length = (uintptr_t)(&__eh_frame_end - &__eh_frame_start);
   info.dwarf_section =        (uintptr_t)(&__eh_frame_start);
   _LIBUNWIND_TRACE_UNWINDING("findUnwindSections: section %p length %p",
@@ -418,6 +434,17 @@ inline bool LocalAddressSpace::findUnwindSections(pint_t targetAddr,
   _LIBUNWIND_TRACE_UNWINDING("findUnwindSections: index section %p length %p",
                              (void *)info.dwarf_index_section, (void *)info.dwarf_index_section_length);
 #endif
+
+#elif defined(RUST_SGX)
+  info.dwarf_section =        (uintptr_t)EH_FRM_OFFSET + (uintptr_t)(&IMAGE_BASE);
+  info.dwarf_section_length = (uintptr_t)EH_FRM_LEN;
+#if defined(_LIBUNWIND_SUPPORT_DWARF_INDEX)
+  info.dwarf_index_section =        (uintptr_t)EH_FRM_HDR_OFFSET + (uintptr_t)(&IMAGE_BASE);
+  info.dwarf_index_section_length = (uintptr_t)EH_FRM_HDR_LEN;
+#endif
+
+#endif
+  
   if (info.dwarf_section_length)
     return true;
 #elif defined(_LIBUNWIND_ARM_EHABI) && defined(_LIBUNWIND_IS_BAREMETAL)
