@@ -139,6 +139,11 @@ struct ProcessorGroup {
 
 template <typename F>
 static bool IterateProcInfo(LOGICAL_PROCESSOR_RELATIONSHIP Relationship, F Fn) {
+#if !defined(_WIN64) && defined(__MINGW64_VERSION_MAJOR) && __MINGW64_VERSION_MAJOR < 7
+  // `GetLogicalProcessorInformationEx@12` was only added to i386 mingw-w64 in v7.0.0
+  // https://github.com/mingw-w64/mingw-w64/commit/24842d45e025db0d38fa2bbd932b95a83282efa2#diff-faf1d8a1556e75a84b7cef2e89512e79R634
+  return false;
+#else
   DWORD Len = 0;
   BOOL R = ::GetLogicalProcessorInformationEx(Relationship, NULL, &Len);
   if (R || GetLastError() != ERROR_INSUFFICIENT_BUFFER) {
@@ -159,6 +164,7 @@ static bool IterateProcInfo(LOGICAL_PROCESSOR_RELATIONSHIP Relationship, F Fn) {
   }
   free(Info);
   return true;
+#endif
 }
 
 static ArrayRef<ProcessorGroup> getProcessorGroups() {
