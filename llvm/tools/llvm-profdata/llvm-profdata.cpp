@@ -185,7 +185,7 @@ typedef SmallVector<WeightedFile, 5> WeightedFileVector;
 struct WriterContext {
   std::mutex Lock;
   InstrProfWriter Writer;
-  SmallVector<std::pair<Error, std::string>, 0> Errors;
+  std::vector<std::pair<Error, std::string>> Errors;
   std::mutex &ErrLock;
   SmallSet<instrprof_error, 4> &WriterErrorCodes;
 
