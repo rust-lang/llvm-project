@@ -78,6 +78,7 @@ public:
   virtual void printCOFFDirectives() { }
   virtual void printCOFFBaseReloc() { }
   virtual void printCOFFDebugDirectory() { }
+  virtual void printCOFFTLSDirectory() {}
   virtual void printCOFFResources() {}
   virtual void printCOFFLoadConfig() { }
   virtual void printCodeViewDebugInfo() { }
