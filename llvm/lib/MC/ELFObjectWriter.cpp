@@ -614,7 +614,7 @@ void ELFWriter::computeSymbolTable(
   // Symbol table
   unsigned EntrySize = is64Bit() ? ELF::SYMENTRY_SIZE64 : ELF::SYMENTRY_SIZE32;
   MCSectionELF *SymtabSection =
-      Ctx.getELFSection(".symtab", ELF::SHT_SYMTAB, 0, EntrySize, "");
+      Ctx.getELFSection(".symtab", ELF::SHT_SYMTAB, 0, EntrySize);
   SymtabSection->setAlignment(is64Bit() ? Align(8) : Align(4));
   SymbolTableIndex = addToSectionTable(SymtabSection);
 
@@ -711,7 +711,7 @@ void ELFWriter::computeSymbolTable(
 
   if (HasLargeSectionIndex) {
     MCSectionELF *SymtabShndxSection =
-        Ctx.getELFSection(".symtab_shndx", ELF::SHT_SYMTAB_SHNDX, 0, 4, "");
+        Ctx.getELFSection(".symtab_shndx", ELF::SHT_SYMTAB_SHNDX, 0, 4);
     SymtabShndxSectionIndex = addToSectionTable(SymtabShndxSection);
     SymtabShndxSection->setAlignment(Align(4));
   }
@@ -1114,7 +1114,8 @@ uint64_t ELFWriter::writeObject(MCAssembler &Asm, const MCAsmLayout &Layout) {
       Asm.registerSymbol(*SignatureSymbol);
       unsigned &GroupIdx = RevGroupMap[SignatureSymbol];
       if (!GroupIdx) {
-        MCSectionELF *Group = Ctx.createELFGroupSection(SignatureSymbol);
+        MCSectionELF *Group =
+            Ctx.createELFGroupSection(SignatureSymbol, Section.isComdat());
         GroupIdx = addToSectionTable(Group);
         Group->setAlignment(Align(4));
         Groups.push_back(Group);
@@ -1139,7 +1140,7 @@ uint64_t ELFWriter::writeObject(MCAssembler &Asm, const MCAsmLayout &Layout) {
   if (!Asm.CGProfile.empty()) {
     CGProfileSection = Ctx.getELFSection(".llvm.call-graph-profile",
                                          ELF::SHT_LLVM_CALL_GRAPH_PROFILE,
-                                         ELF::SHF_EXCLUDE, 16, "");
+                                         ELF::SHF_EXCLUDE, 16);
     SectionIndexMap[CGProfileSection] = addToSectionTable(CGProfileSection);
   }
 
@@ -1151,7 +1152,7 @@ uint64_t ELFWriter::writeObject(MCAssembler &Asm, const MCAsmLayout &Layout) {
 
     const MCSymbol *SignatureSymbol = Group->getGroup();
     assert(SignatureSymbol);
-    write(uint32_t(ELF::GRP_COMDAT));
+    write(uint32_t(Group->isComdat() ? ELF::GRP_COMDAT : 0));
     for (const MCSectionELF *Member : GroupMembers[SignatureSymbol]) {
       uint32_t SecIndex = SectionIndexMap.lookup(Member);
       write(SecIndex);
