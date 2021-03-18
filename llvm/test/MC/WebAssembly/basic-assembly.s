@@ -1,6 +1,6 @@
-# RUN: llvm-mc -triple=wasm32-unknown-unknown -mattr=+atomics,+unimplemented-simd128,+nontrapping-fptoint,+exception-handling < %s | FileCheck %s
+# RUN: llvm-mc -triple=wasm32-unknown-unknown -mattr=+atomics,+nontrapping-fptoint,+exception-handling < %s | FileCheck %s
 # Check that it converts to .o without errors, but don't check any output:
-# RUN: llvm-mc -triple=wasm32-unknown-unknown -filetype=obj -mattr=+atomics,+unimplemented-simd128,+nontrapping-fptoint,+exception-handling -o %t.o < %s
+# RUN: llvm-mc -triple=wasm32-unknown-unknown -filetype=obj -mattr=+atomics,+nontrapping-fptoint,+exception-handling -o %t.o < %s
 
 
 empty_func:
@@ -116,12 +116,12 @@ test0:
     .globaltype __stack_pointer, i32
 
 .tabletype empty_eref_table, externref
-empty_eref_table:       
+empty_eref_table:
 
 .tabletype empty_fref_table, funcref
-empty_fref_table:       
+empty_fref_table:
 
-        
+
 # CHECK:           .text
 # CHECK-LABEL: empty_func:
 # CHECK-NEXT:      .functype	empty_func () -> ()
@@ -226,6 +226,6 @@ empty_fref_table:
 
 # CHECK:           .tabletype empty_eref_table, externref
 # CHECK-NEXT: empty_eref_table:
-        
+
 # CHECK:           .tabletype empty_fref_table, funcref
 # CHECK-NEXT: empty_fref_table:

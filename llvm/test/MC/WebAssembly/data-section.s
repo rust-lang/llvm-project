@@ -1,6 +1,6 @@
-# RUN: llvm-mc -triple=wasm32-unknown-unknown -mattr=+unimplemented-simd128,+nontrapping-fptoint,+exception-handling < %s | FileCheck %s
+# RUN: llvm-mc -triple=wasm32-unknown-unknown -mattr=+simd128,+nontrapping-fptoint,+exception-handling < %s | FileCheck %s
 # Check that it converts to .o without errors:
-# RUN: llvm-mc -triple=wasm32-unknown-unknown -filetype=obj -mattr=+unimplemented-simd128,+nontrapping-fptoint,+exception-handling < %s | obj2yaml | FileCheck -check-prefix=BIN %s
+# RUN: llvm-mc -triple=wasm32-unknown-unknown -filetype=obj -mattr=+nontrapping-fptoint,+exception-handling < %s | obj2yaml | FileCheck -check-prefix=BIN %s
 
 # Minimal test for data sections.
 
