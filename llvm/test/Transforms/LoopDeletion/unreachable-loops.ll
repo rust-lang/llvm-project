@@ -245,11 +245,26 @@ exit:
 ; Delete a loop (L2) which has subloop (L3).
 ; Here we delete loop L2, but leave L3 as is.
 define void @test9(i64 %n) {
-; CHECK-LABEL: test9
-; CHECK-LABEL: entry:
-; CHECK-NEXT:    br label %exit
-; CHECK-LABEL: exit:
-; CHECK-NEXT:    ret  void
+; CHECK-LABEL: @test9(
+; CHECK-NEXT:  entry:
+; CHECK-NEXT:    br label [[L1:%.*]]
+; CHECK:       L1.loopexit:
+; CHECK-NEXT:    br label [[L1_LOOPEXIT_SPLIT:%.*]]
+; CHECK:       L1.loopexit.split:
+; CHECK-NEXT:    unreachable
+; CHECK:       L1:
+; CHECK-NEXT:    br i1 true, label [[EXIT:%.*]], label [[L2_PREHEADER:%.*]]
+; CHECK:       L2.preheader:
+; CHECK-NEXT:    br label [[L3_PREHEADER:%.*]]
+; CHECK:       L3.preheader:
+; CHECK-NEXT:    [[Y_L2_LCSSA:%.*]] = phi i64 [ undef, [[L2_PREHEADER]] ]
+; CHECK-NEXT:    br label [[L3:%.*]]
+; CHECK:       L3:
+; CHECK-NEXT:    [[COND2:%.*]] = icmp slt i64 [[Y_L2_LCSSA]], [[N:%.*]]
+; CHECK-NEXT:    br i1 [[COND2]], label [[L3]], label [[L1_LOOPEXIT:%.*]]
+; CHECK:       exit:
+; CHECK-NEXT:    ret void
+;
 ; REMARKS-LABEL: Function: test9
 ; REMARKS: Loop deleted because it never executes
 entry:
