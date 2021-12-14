@@ -212,7 +212,7 @@ struct InlineParams {
   Optional<bool> ComputeFullInlineCost;
 
   /// Indicate whether we should allow inline deferral.
-  Optional<bool> EnableDeferral = true;
+  Optional<bool> EnableDeferral;
 };
 
 /// Generate the parameters to tune the inline cost analysis based only on the
