@@ -518,7 +518,8 @@ static void buildCopyToRegs(MachineIRBuilder &B, ArrayRef<Register> DstRegs,
 bool CallLowering::determineAndHandleAssignments(
     ValueHandler &Handler, ValueAssigner &Assigner,
     SmallVectorImpl<ArgInfo> &Args, MachineIRBuilder &MIRBuilder,
-    CallingConv::ID CallConv, bool IsVarArg, Register ThisReturnReg) const {
+    CallingConv::ID CallConv, bool IsVarArg,
+    ArrayRef<Register> ThisReturnRegs) const {
   MachineFunction &MF = MIRBuilder.getMF();
   const Function &F = MF.getFunction();
   SmallVector<CCValAssign, 16> ArgLocs;
@@ -528,7 +529,7 @@ bool CallLowering::determineAndHandleAssignments(
     return false;
 
   return handleAssignments(Handler, Args, CCInfo, ArgLocs, MIRBuilder,
-                           ThisReturnReg);
+                           ThisReturnRegs);
 }
 
 static unsigned extendOpFromFlags(llvm::ISD::ArgFlagsTy Flags) {
@@ -605,7 +606,7 @@ bool CallLowering::handleAssignments(ValueHandler &Handler,
                                      CCState &CCInfo,
                                      SmallVectorImpl<CCValAssign> &ArgLocs,
                                      MachineIRBuilder &MIRBuilder,
-                                     Register ThisReturnReg) const {
+                                     ArrayRef<Register> ThisReturnRegs) const {
   MachineFunction &MF = MIRBuilder.getMF();
   MachineRegisterInfo &MRI = MF.getRegInfo();
   const Function &F = MF.getFunction();
@@ -732,10 +733,10 @@ bool CallLowering::handleAssignments(ValueHandler &Handler,
 
       assert(!VA.needsCustom() && "custom loc should have been handled already");
 
-      if (i == 0 && ThisReturnReg.isValid() &&
+      if (i == 0 && !ThisReturnRegs.empty() &&
           Handler.isIncomingArgumentHandler() &&
           isTypeIsValidForThisReturn(ValVT)) {
-        Handler.assignValueToReg(Args[i].Regs[i], ThisReturnReg, VA);
+        Handler.assignValueToReg(ArgReg, ThisReturnRegs[Part], VA);
         continue;
       }
 
