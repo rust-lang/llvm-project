@@ -43,9 +43,9 @@ MCAsmBackend *createBPFbeAsmBackend(const Target &T, const MCSubtargetInfo &STI,
                                     const MCRegisterInfo &MRI,
                                     const MCTargetOptions &Options);
 
-std::unique_ptr<MCObjectTargetWriter> createBPFELFObjectWriter(uint8_t OSABI,
-                                                               bool isSolana);
-}
+std::unique_ptr<MCObjectTargetWriter>
+createBPFELFObjectWriter(uint8_t OSABI, bool isSolana, bool useRelocAbs64);
+} // namespace llvm
 
 // Defines symbolic names for BPF registers.  This defines a mapping from
 // register name to register number.

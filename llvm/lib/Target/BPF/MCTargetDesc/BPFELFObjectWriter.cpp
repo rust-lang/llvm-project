@@ -21,7 +21,7 @@ namespace {
 
 class BPFELFObjectWriter : public MCELFObjectTargetWriter {
 public:
-  BPFELFObjectWriter(uint8_t OSABI, bool isSolana);
+  BPFELFObjectWriter(uint8_t OSABI, bool isSolana, bool relocAbs64);
   ~BPFELFObjectWriter() override = default;
 
 protected:
@@ -32,6 +32,7 @@ protected:
                                unsigned Type) const override;
 private:
   bool isSolana;
+  bool relocAbs64;
 };
 
 } // end anonymous namespace
@@ -45,10 +46,11 @@ bool BPFELFObjectWriter::needsRelocateWithSymbol(const MCSymbol &Sym,
   return isSolana;
 }
 
-BPFELFObjectWriter::BPFELFObjectWriter(uint8_t OSABI, bool isSolana)
+BPFELFObjectWriter::BPFELFObjectWriter(uint8_t OSABI, bool isSolana,
+                                       bool relocAbs64)
     : MCELFObjectTargetWriter(/*Is64Bit*/ true, OSABI, ELF::EM_BPF,
                               /*HasRelocationAddend*/ false),
-      isSolana(isSolana) {}
+      isSolana(isSolana), relocAbs64(relocAbs64) {}
 
 unsigned BPFELFObjectWriter::getRelocType(MCContext &Ctx, const MCValue &Target,
                                           const MCFixup &Fixup,
@@ -64,7 +66,7 @@ unsigned BPFELFObjectWriter::getRelocType(MCContext &Ctx, const MCValue &Target,
     // CALL instruction.
     return ELF::R_BPF_64_32;
   case FK_Data_8:
-    return isSolana ? ELF::R_BPF_64_64 : ELF::R_BPF_64_ABS64;
+    return (isSolana && !relocAbs64) ? ELF::R_BPF_64_64 : ELF::R_BPF_64_ABS64;
   case FK_Data_4:
     if (const MCSymbolRefExpr *A = Target.getSymA()) {
       const MCSymbol &Sym = A->getSymbol();

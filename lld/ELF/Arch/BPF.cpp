@@ -46,6 +46,7 @@ RelExpr BPF::getRelExpr(RelType type, const Symbol &s,
     case R_BPF_64_32:
       return R_PC;
     case R_BPF_64_64:
+    case R_BPF_64_ABS64:
       return R_ABS;
     default:
       error(getErrorLocation(loc) + "unrecognized reloc " + toString(type));
@@ -54,7 +55,18 @@ RelExpr BPF::getRelExpr(RelType type, const Symbol &s,
 }
 
 RelType BPF::getDynRel(RelType type) const {
-  return type;
+  switch (type) {
+    case R_BPF_64_ABS64:
+        // R_BPF_64_ABS64 is symbolic like R_BPF_64_64, which is set as our
+        // symbolicRel in the constructor. Return R_BPF_64_64 here so that if
+        // the symbol isn't preemptible, we emit a _RELATIVE relocation instead
+        // and skip emitting the symbol.
+        //
+        // See https://github.com/solana-labs/llvm-project/blob/6b6aef5dbacef31a3c7b3a54f7f1ba54cafc7077/lld/ELF/Relocations.cpp#L1179
+        return R_BPF_64_64;
+    default:
+        return type;
+  }
 }
 
 int64_t BPF::getImplicitAddend(const uint8_t *buf, RelType type) const {
@@ -74,6 +86,13 @@ void BPF::relocate(uint8_t *loc, const Relocation &rel, uint64_t val) const {
       // instructions, lower 32 first.
       write32le(loc + 4, val & 0xFFFFFFFF);
       write32le(loc + 8 + 4, val >> 32);
+      break;
+    }
+    case R_BPF_64_ABS64: {
+      // The relocation type is used for normal 64-bit data. The
+      // actual to-be-relocated data is stored at r_offset and the
+      // read/write data bitsize is 64 (8 bytes).
+      write64le(loc, val);
       break;
     }
     default:
