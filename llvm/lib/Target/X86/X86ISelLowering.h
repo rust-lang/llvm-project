@@ -732,6 +732,9 @@ namespace llvm {
     // User level interrupts - testui
     TESTUI,
 
+    // Perform an FP80 add after changing precision control in FPCW.
+    FP80_ADD,
+
     /// X86 strict FP compare instructions.
     STRICT_FCMP = ISD::FIRST_TARGET_STRICTFP_OPCODE,
     STRICT_FCMPS,
@@ -770,6 +773,9 @@ namespace llvm {
     // Conversions between float and half-float.
     STRICT_CVTPS2PH,
     STRICT_CVTPH2PS,
+
+    // Perform an FP80 add after changing precision control in FPCW.
+    STRICT_FP80_ADD,
 
     // WARNING: Only add nodes here if they are stric FP nodes. Non-memory and
     // non-strict FP nodes should be above FIRST_TARGET_STRICTFP_OPCODE.
