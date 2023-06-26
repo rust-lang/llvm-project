@@ -1103,6 +1103,12 @@ WebAssembly Support
 ^^^^^^^^^^^^^^^^^^^
 - The -mcpu=generic configuration now enables sign-ext and mutable-globals. These
   proposals are standardized and available in all major engines.
+- Shared library support (and PIC code generation) for WebAssembly is no longer
+  limited to the Emscripten target OS and now works with other targets such as
+  wasm32-wasi.  Note that the `format
+  <https://github.com/WebAssembly/tool-conventions/blob/main/DynamicLinking.md>`_
+  is not yet stable and may change between LLVM versions.  Also, WASI does not
+  yet have facilities to load dynamic libraries.
 
 DWARF Support in Clang
 ----------------------
