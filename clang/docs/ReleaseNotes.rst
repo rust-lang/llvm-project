@@ -711,13 +711,6 @@ Bug Fixes in This Version
 - Fix a hang on valid C code passing a function type as an argument to
   ``typeof`` to form a function declaration.
   (`#64713 <https://github.com/llvm/llvm-project/issues/64713>_`)
-- Fixed an issue where accesses to the local variables of a coroutine during
-  ``await_suspend`` could be misoptimized, including accesses to the awaiter
-  object itself.
-  (`#56301 <https://github.com/llvm/llvm-project/issues/56301>`_)
-  The current solution may bring performance regressions if the awaiters have
-  non-static data members. See
-  `#64945 <https://github.com/llvm/llvm-project/issues/64945>`_ for details.
 - Clang now correctly diagnoses ``function_needs_feature`` when always_inline
   callee has incompatible target features with caller.
 - Removed the linking of libraries when ``-r`` is passed to the driver on AIX.
@@ -1008,7 +1001,7 @@ CUDA Support
 
 AIX Support
 ^^^^^^^^^^^
-- Enabled ThinLTO support. Minimum OS requirement is AIX 7.2 TL5 SP6 or
+- Enabled ThinLTO support. Minimum OS requirement is AIX 7.2 TL5 SP7 or
   the upcoming AIX 7.3 TL2.
 
 - Enabled integrated assembler (``-f[no-]integrated-as``) for LTO. LTO now
