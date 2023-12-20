@@ -39,7 +39,7 @@ struct CallReturnHandler : public M68kIncomingValueHandler {
 
 private:
   void assignValueToReg(Register ValVReg, Register PhysReg,
-                        const CCValAssign &VA) override;
+                        const CCValAssign VA) override;
 
   MachineInstrBuilder &MIB;
 };
