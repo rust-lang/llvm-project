@@ -17,7 +17,6 @@
 #include "llvm/ADT/ArrayRef.h"
 #include "llvm/ADT/DenseMap.h"
 #include "llvm/ADT/MapVector.h"
-#include "llvm/ADT/SmallVector.h"
 #include "llvm/ADT/StringRef.h"
 #include "llvm/Support/Compiler.h"
 #include <cstddef>
@@ -366,18 +365,6 @@ public:
   // Check backward location counter assignment and memory region/LMA overflows.
   void checkFinalScriptConditions() const;
 
-  // Add symbols that are referenced in the linker script to the symbol table.
-  // Symbols referenced in a PROVIDE command are only added to the symbol table
-  // if the PROVIDE command actually provides the symbol.
-  // It also adds the symbols referenced by the used PROVIDE symbols to the
-  // linker script referenced symbols list.
-  void addScriptReferencedSymbolsToSymTable();
-
-  // Returns true if the PROVIDE symbol should be added to the link.
-  // A PROVIDE symbol is added to the link only if it satisfies an
-  // undefined reference.
-  static bool shouldAddProvideSym(StringRef symName);
-
   // SECTIONS command list.
   SmallVector<SectionCommand *, 0> sectionCommands;
 
@@ -412,14 +399,6 @@ public:
 
   // Sections that will be warned/errored by --orphan-handling.
   SmallVector<const InputSectionBase *, 0> orphanSections;
-
-  // Stores the mapping: PROVIDE symbol -> symbols referred in the PROVIDE
-  // expression. For example, if the PROVIDE command is:
-  //
-  // PROVIDE(v = a + b + c);
-  //
-  // then provideMap should contain the mapping: 'v' -> ['a', 'b', 'c']
-  llvm::MapVector<StringRef, SmallVector<StringRef, 0>> provideMap;
 
   // List of potential spill locations (PotentialSpillSection) for an input
   // section.
