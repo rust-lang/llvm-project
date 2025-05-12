@@ -18,6 +18,7 @@
 #include "llvm/IR/IRBuilder.h"
 #include "llvm/IR/Instructions.h"
 #include "llvm/IR/Module.h"
+#include "llvm/TargetParser/Triple.h"
 
 using namespace llvm;
 
@@ -107,6 +108,15 @@ static GlobalVariable *createRelLookupTable(Function &Func,
 
   uint64_t Idx = 0;
   SmallVector<Constant *, 64> RelLookupTableContents(NumElts);
+
+  // Apple's ld-classic assigns incorrect relative addresses on
+  // x86_64-apple-darwin. See https://github.com/rust-lang/rust/issues/140686.
+  Triple TT(M.getTargetTriple());
+  if (TT.isX86() && TT.isOSDarwin())
+    for (Use &Operand : LookupTableArr->operands()) {
+      if (auto *GlobalElement = dyn_cast<GlobalValue>(Operand))
+        GlobalElement->setUnnamedAddr(GlobalValue::UnnamedAddr::None);
+    }
 
   for (Use &Operand : LookupTableArr->operands()) {
     Constant *Element = cast<Constant>(Operand);
