@@ -38,6 +38,10 @@ static cl::opt<bool> BPFExpandMemcpyInOrder("bpf-expand-memcpy-in-order",
   cl::Hidden, cl::init(false),
   cl::desc("Expand memcpy into load/store pairs in order"));
 
+static cl::opt<bool> BPFAllowMisalignedMemAccess("bpf-allow-misaligned-mem-access",
+  cl::Hidden, cl::init(false),
+  cl::desc("Allow misaligned memory access"));
+
 static void fail(const SDLoc &DL, SelectionDAG &DAG, const Twine &Msg,
                  SDValue Val = {}) {
   std::string Str;
@@ -196,6 +200,26 @@ BPFTargetLowering::BPFTargetLowering(const TargetMachine &TM,
   HasJmp32 = STI.getHasJmp32();
   HasJmpExt = STI.getHasJmpExt();
   HasMovsx = STI.hasMovsx();
+}
+
+bool BPFTargetLowering::allowsMisalignedMemoryAccesses(
+    EVT VT, unsigned, Align, MachineMemOperand::Flags, unsigned *Fast) const {
+  if (!BPFAllowMisalignedMemAccess) {
+  	// --bpf-allow-misaligned-mem-access isn't opted in
+	return false;
+  }	
+  
+  if (!VT.isSimple()) {
+    // only allow misalignment for simple value types
+	return false;
+  }
+  
+  if (Fast) {
+	// always assume fast mode when BPFAllowMisalignedMemAccess is enabled 
+    *Fast = true;
+  }
+  
+  return true;
 }
 
 bool BPFTargetLowering::isOffsetFoldingLegal(const GlobalAddressSDNode *GA) const {

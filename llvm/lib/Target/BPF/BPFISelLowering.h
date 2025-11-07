@@ -46,6 +46,10 @@ public:
   // with the given GlobalAddress is legal.
   bool isOffsetFoldingLegal(const GlobalAddressSDNode *GA) const override;
 
+  bool allowsMisalignedMemoryAccesses(EVT VT, unsigned, Align,
+                                      MachineMemOperand::Flags,
+                                      unsigned *) const override;
+
   BPFTargetLowering::ConstraintType
   getConstraintType(StringRef Constraint) const override;
 
